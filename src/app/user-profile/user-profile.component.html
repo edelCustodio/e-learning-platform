@@ -1,0 +1,212 @@
+<div class="container pt-5">
+    <div class="row my-2">
+        <div class="col-lg-8 order-lg-2">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a href="" data-target="#profile" data-toggle="tab" class="nav-link active">Profile</a>
+                </li>
+                <li class="nav-item" [style.display]="isUserAdminAndLoggedInByUsername() ? null : 'none'">
+                    <a class="hidden" href="" data-target="#edit" data-toggle="tab" class="nav-link">Edit</a>
+                </li>
+                <li class="nav-item" [style.display]="isUserLoggedInByUN ? null : 'none'">
+                    <a href="" data-target="#psw" data-toggle="tab" class="nav-link">Change password</a>
+                </li>
+            </ul>
+            <div class="tab-content py-4">
+                <div class="tab-pane active" id="profile">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table class="table">
+                                <tr>
+                                    <td> Name: </td>
+                                    <td> {{user.firstName}} {{user.lastName}} </td>
+                                </tr>
+                                <tr>
+                                    <td> Username: </td>
+                                    <td> {{user.username}} </td>
+                                </tr>
+                                <tr>
+                                    <td> Date of birth: </td>
+                                    <td> {{dateOfBirth}} </td>
+                                </tr>
+                                <tr>
+                                    <td> Phone number: </td>
+                                    <td> {{user.phoneNumber}} </td>
+                                </tr>
+                                <tr>
+                                    <td> Address: </td>
+                                    <td> {{user.address}} </td>
+                                </tr>
+                                <tr>
+                                    <td> Roles: </td>
+                                    <td> {{user.roleName}} </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                    </div>
+                    <!--/row-->
+                </div>
+                <div class="tab-pane" id="psw">
+                    <div class="alert alert-info alert-dismissible fade show" *ngIf="showMessage">
+                        <button type="button" class="close" data-dismiss="alert" (click)="showMessage = false;">&times;</button>
+                        {{ messagge }}
+                    </div>
+                    <form role="form" #fPsw="ngForm" (ngSubmit)="changePassword()">
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Old password</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" type="password" id="oldPassword" name="oldPassword" required #oldPassword="ngModel" [(ngModel)]="oldPass">
+                                <span class="help-block" *ngIf="oldPassword.touched && !oldPassword.valid">
+                                    <i>This field is required.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">New password</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" (keyup)="checkPasswords()" type="password" id="newPassword" name="newPassword" required #newPassword="ngModel"
+                                    [(ngModel)]="newPass">
+                                <span class="help-block" *ngIf="newPassword.touched && !newPassword.valid">
+                                    <i>This field is required.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Repeat password</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" type="password" required #repeatedPassword="ngModel" id="repeatedPassword" name="repeatedPassword"
+                                    [(ngModel)]="repeatedPass" (keyup)="checkPasswords()">
+                                <span class="help-block" *ngIf="repeatedPassword.touched && !repeatedPassword.valid">
+                                    <i>This field is required.</i>
+                                </span>
+                                <span class="help-block" *ngIf="!matchingPasswords">
+                                    <i>Passwords are not the same.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label"></label>
+                            <div class="col-lg-9">
+                                <input type="reset" class="btn btn-secondary" value="Cancel">
+                                <input type="submit" class="btn btn-primary" [disabled]="!fPsw.valid || !matchingPasswords" value="Save Changes">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="tab-pane hide" id="edit">
+                    <form role="form" #f="ngForm" (ngSubmit)="userEdit()">
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">First name</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" type="text" [(ngModel)]="user.firstName" id="firstName" name="firstName" required #firstName="ngModel"
+                                    maxlength="20" [(ngModel)]="user.firstName">
+                                <span class="help-block" *ngIf="firstName.touched && !firstName.valid">
+                                    <i>First name is required.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Last name</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" type="text" [(ngModel)]="user.lastName" id="lastName" name="lastName" required #lastName="ngModel"
+                                    maxlength="20" [(ngModel)]="user.lastName">
+                                <span class="help-block" *ngIf="lastName.touched && !lastName.valid">
+                                    <i>Last name is required.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Username</label>
+                            <div class="col-lg-9">
+                                <input class="form-control" type="text" [(ngModel)]="user.username" required #username="ngModel" id="username" name="username"
+                                    [(ngModel)]="user.username" maxlength="20" (keyup)="isUsernameUnique()" [ngClass]="{'not-unique':!isUnique}">
+                                <span class="help-block" *ngIf="username.touched && !username.valid">
+                                    <i>Username is required.</i>
+                                </span>
+                                <span class="help-block" *ngIf="username.touched && !isUnique">
+                                    <i>This username is taken.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Phone number</label>
+                            <div class="col-lg-9">
+                                <input id="phoneNumber" name="phoneNumber" #phoneNumber="ngModel" [(ngModel)]="user.phoneNumber" maxlength="20" class="form-control"
+                                    type="text" [(ngModel)]="user.phoneNumber">
+                                <span class="help-block" *ngIf="phoneNumber.touched && !phoneNumber.valid">
+                                    <i>Can't contain more than 20 characters.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Address</label>
+                            <div class="col-lg-9">
+                                <input id="address" name="address" class="form-control" type="text" [(ngModel)]="user.address" maxlength="30" [(ngModel)]="user.address"
+                                    #address="ngModel">
+                                <span class="help-block" *ngIf="address.touched && !address.valid">
+                                    <i>Can't contain more than 30 characters.</i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Date od birth</label>
+                            <div class="col-lg-9">
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="yyyy-mm-dd" name="dp" [(ngModel)]="model" ngbDatepicker #d="ngbDatepicker">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+                                            <img src="assets/img/calendar-icon.png" style="width: 1.2rem; height: 1rem; cursor: pointer;" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row"  [style.display]="isUserAdmin()? null : 'none'">
+                            <label class="col-lg-3 col-form-label form-control-label">Roles
+                                <br>
+                                <small>
+                                    <i>({{user.roleName}})</i>
+                                </small>
+                            </label>
+                            <div class="col-lg-9">
+                                <select name="rolesSelect" [(ngModel)]="user.roleId" multiple class="form-control" id="rolesSelect" required>
+                                    <option class="selected" *ngFor="let r of roles" value="{{r.roleId}}">{{r.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label"></label>
+                            <div class="col-lg-9">
+                                <input type="reset" class="btn btn-secondary" value="Cancel">
+                                <input type="submit" class="btn btn-primary" [disabled]="!f.valid || !isUnique" value="Save Changes">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 order-lg-1 text-center">
+            <img src="{{nuxeoImagePath}}" class="mx-auto img-fluid img-circle d-block"
+             onerror="this.src='assets/img/loading.gif'">
+             <div [style.display]="isUserAdminAndLoggedInByUsername() ? null : 'none'">
+                <h6 class="mt-2">Upload a different photo</h6>
+                <label class="btn btn-success cursor-pointer" style="width:75px;">
+                    Browse <input type="file" id="file" class="custom-file-input cursor-pointer" (change)="fileChange($event)">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- <app-student-pre-exam-obligation [(userId)]="userId" [(courseId)]="courseId"></app-student-pre-exam-obligation>
+    <app-professor-pre-exam-obligation [(userId)]="userId" [(courseId)]="courseId"></app-professor-pre-exam-obligation>
+
+    <app-professor-exam-records [(courseId)]="courseId"></app-professor-exam-records>
+
+    <app-student-course [(userId)]="userId" [(courseId)]="courseId"></app-student-course> -->
+
+    <div *ngIf="user.roleId == 3">
+        <app-student-payments [userId]="userId"></app-student-payments>
+    </div>
+
+</div>
