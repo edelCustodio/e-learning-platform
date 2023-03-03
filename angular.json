@@ -67,7 +67,8 @@
               "browserTarget": "e-learning:build:production"
             },
             "development": {
-              "browserTarget": "e-learning:build:development"
+              "browserTarget": "e-learning:build:development",
+              "proxyConfig": "src/proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
